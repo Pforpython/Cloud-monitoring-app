@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Monitor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000428, #004e92);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dashboard {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            max-width: 800px;
+            width: 90%;
+        }
+
+        .title {
+            text-align: center;
+            color: #00ffff;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .metrics {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .metric {
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .gauge {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                var(--gauge-color) calc(var(--percentage) * 1%),
+                #1a1a1a calc(var(--percentage) * 1%)
+            );
+            position: relative;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .gauge::before {
+            content: '';
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 50%;
+        }
+
+        .percentage {
+            position: relative;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        .label {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            color: #00ffff;
+        }
+
+        .warning {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 0, 0, 0.2);
+            border-radius: 10px;
+            text-align: center;
+            color: #ff4444;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="dashboard">
+        <h1 class="title">Host System Resource Monitor</h1>
+        <div class="metrics">
+            <div class="metric">
+                <div class="gauge" style="--percentage: {{ cpu_percent }}; --gauge-color: {{ '#ff4444' if cpu_percent > 80 else '#00ffff' }}">
+                    <div class="percentage">{{ cpu_percent }}%</div>
+                </div>
+                <div class="label">CPU Usage</div>
+            </div>
+            <div class="metric">
+                <div class="gauge" style="--percentage: {{ mem_percent }}; --gauge-color: {{ '#ff4444' if mem_percent > 80 else '#00ffff' }}">
+                    <div class="percentage">{{ mem_percent }}%</div>
+                </div>
+                <div class="label">Memory Usage</div>
+            </div>
+        </div>
+        {% if message %}
+        <div class="warning">{{ message }}</div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Create animated stars in the background
+        function createStars() {
+            const stars = document.querySelector('.stars');
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.style.position = 'absolute';
+                star.style.width = '2px';
+                star.style.height = '2px';
+                star.style.background = '#fff';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.opacity = Math.random();
+                stars.appendChild(star);
+
+                // Animate star twinkling
+                gsap.to(star, {
+                    opacity: Math.random(),
+                    duration: 1 + Math.random() * 2,
+                    repeat: -1,
+                    yoyo: true
+                });
+            }
+        }
+
+        createStars();
+
+        // Refresh the page every 5 seconds to get new metrics
+        setTimeout(() => {
+            window.location.reload();
+        }, 5000);
+    </script>
+</body>
+</html>
