@@ -1,3 +1,6 @@
+# With Redis logging
+# See templates/html_templates/logging_page.html for html page created by Claude
+
 import psutil
 from flask import Flask, render_template
 import redis
@@ -43,8 +46,12 @@ def index():
     cpu_percent = psutil.cpu_percent()
     mem_percent = psutil.virtual_memory().percent
     Message = None
-    if cpu_percent > 80 or mem_percent > 80:
-        Message = "WARNING! High CPU or Memory Utilization detected. Please scale up."
+    if cpu_percent > 80:
+        Message = "WARNING! High CPU Utilization detected. Please scale up CPU." 
+    elif mem_percent > 80:
+        Message = "WARNING! High Memory Utilization detected. Pleace scale up memory."
+    else:
+        Message = "WARNING! High CPU & Memory Utilization detected. Please scale up."
     return render_template("space-themed.html", 
                          cpu_percent=cpu_percent, 
                          mem_percent=mem_percent, 
@@ -74,3 +81,54 @@ metrics_thread.start()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
+    
+    
+"""
+To use this updated version:
+
+1. First, install Redis and the Python Redis client:
+
+```bash
+# Install Redis server
+sudo apt-get install redis-server  # For Ubuntu/Debian
+# or
+brew install redis  # For macOS
+
+# Install Python Redis client
+pip install redis
+```
+
+2. Start the Redis server:
+```bash
+redis-server
+```
+
+3. The application now provides:
+   - Original monitoring at the root URL "/"
+   - Metrics history at "/metrics"
+   - Background thread logging metrics to Redis every 5 seconds
+   - Storage of the last 100 measurements
+
+4. You can also directly query Redis using the redis-cli:
+```bash
+redis-cli
+> LRANGE system_metrics 0 -1  # Get all metrics
+```
+
+Key features of this implementation:
+1. Uses a background thread to continuously log metrics
+2. Stores metrics as JSON strings in a Redis list
+3. Maintains a fixed-size history (100 entries) to prevent unlimited growth
+4. Provides a web interface to view the metrics history
+5. Includes warning indicators for high utilization
+6. Error handling for Redis operations
+
+You can customize this further by:
+1. Adjusting the logging interval (currently 5 seconds)
+2. Modifying the number of historical entries kept (currently 100)
+3. Adding more metrics to track
+4. Enhancing the metrics visualization (e.g., adding graphs)
+5. Adding data export capabilities
+
+Would you like me to explain any part in more detail or help you customize any of these features?
+"""
